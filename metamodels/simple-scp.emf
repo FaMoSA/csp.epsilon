@@ -1,0 +1,128 @@
+@namespace(
+	uri="http://famosa.github.io/csp/1.0/simple-csp",
+	prefix="simple-csp")
+package simple_csp;
+
+// Constraint Satisfaction Problem
+// ===============================
+
+// TODO: Parameters
+
+class Problem extends NamedElement {
+	val Domain[*]		domains;
+	val Variable[*]		variables;		// decisions
+	val Constraint[*]	constraint; 
+	val Goal[*]			goals;
+}
+
+// Typed Elements
+// ==============
+
+// TODO: Sets, Arrays
+
+// NOTE: elements with an IntegerDomain must be Integers and
+// elements with a RealDomain must be Reals 
+abstract class TypedElement {
+	attr Type 		type;
+	ref  Domain[?]	domain;
+}
+
+// TODO: Real
+
+enum Type {
+	BOOLEAN = 0;
+	INTEGER = 1;
+}
+
+abstract class Domain { }
+
+class IntegerDomain extends Domain {
+	attr Integer minValue;
+	attr Integer maxValue;
+}
+ 
+class Variable extends NamedElement, DescribedElement, TypedElement { } 
+ 
+ 
+// Expressions
+// ===========
+
+// TODO: ForAll, ExistsOne, ...
+
+// Order of precedence:
+// <-> , -> , \/ , /\ , -  
+
+class Constraint extends NamedElement {
+	val Expression exp;
+}
+ 
+abstract class Expression { }
+
+abstract class Operator extends Expression { }
+
+abstract class SetOp extends Operator {
+	val Expression[*] exps;
+}
+
+abstract class BinaryOp extends Operator {
+	val Expression leftExp;
+	val Expression rightExp;
+}
+
+abstract class UnaryOp extends Operator {
+	val Expression exp;
+}
+
+class Not 			extends UnaryOp{ }
+
+class And 			extends BinaryOp{ }
+class Or 			extends BinaryOp{ }
+class Implies 		extends BinaryOp{ }
+class Equal 		extends BinaryOp{ }
+class UnEqual		extends BinaryOp{ }
+class Less 			extends BinaryOp{ }
+class LessEqual		extends BinaryOp{ }
+class Greater 		extends BinaryOp{ }
+class GreaterEqual	extends BinaryOp{ }
+
+class Minus 		extends BinaryOp{ }
+class Plus 			extends BinaryOp{ }
+class Times 		extends BinaryOp{ }
+class Power			extends BinaryOp{ }
+
+// set operations
+class Sum 			extends SetOp{ }
+class Min 			extends SetOp{ }
+class Max 			extends SetOp{ }
+ 
+class VarOccurence	extends Expression {
+	ref	Variable	variable;
+} 
+
+// Boolean Literals
+
+abstract class BooleanLiteral extends Expression { }
+
+class TrueValue extends BooleanLiteral { } 
+class FalseValue extends BooleanLiteral { }
+ 
+// Goals
+// =====
+
+abstract class Goal	extends NamedElement {
+	val Expression exp;
+}
+
+class MaximizeGoal	extends Goal { }
+class MinimizeGoal	extends Goal { }
+
+// Common Meta-Classes
+// ===================
+
+abstract class NamedElement {
+	attr String name;	
+}
+
+abstract class DescribedElement {
+	attr String description;
+}

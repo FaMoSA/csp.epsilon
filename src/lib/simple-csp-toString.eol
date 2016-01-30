@@ -1,0 +1,35 @@
+"Logical Expression asString operations".println();
+
+operation Exp!And asString() : String {
+	return "(" 
+		+ self.leftExp.asString()
+		+ ") and ("
+		+ self.rightExp.asString()
+		+ ")";		
+}
+
+operation Exp!Or asString() : String {
+	return "("
+		+ self.leftExp.asString()
+		+ ") or ("
+		+ self.rightExp.asString()
+		+ ")";
+}
+
+operation Exp!Not asString() : String {
+	return "not (" 
+		+ self.exp.asString()
+		+ ")";
+}
+
+operation Exp!Implies asString() : String {
+	return "(" 
+		+ self.leftExp.asString()
+		+ ") => ("
+		+ self.rightExp.asString()
+		+ ")";
+}
+
+operation Exp!VarOccurence asString() : String {
+	return self.variable.name;
+}

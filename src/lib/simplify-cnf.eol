@@ -1,0 +1,102 @@
+"Operations to simplify Logical Expressions".println();
+
+// TODO:
+// X and not X = FALSE	-- negation laws
+// X or not X = TRUE	-- negation laws
+
+operation Exp!And simplify() : Exp!Expression {
+
+	// X and TRUE = X		-- identity laws
+	if ( self.rightExp.isTypeOf(Exp!TrueValue) ) {
+		return self.leftExp.simplify();
+	}
+	if ( self.leftExp.isTypeOf(Exp!TrueValue) ) {
+		return self.rightExp.simplify();
+	}
+	
+	// X and FALSE = FALSE	-- domination laws
+	if ( self.rightExp.isTypeOf(Exp!FalseValue) ) {
+		return new Exp!FalseValue();
+	}
+	if ( self.leftExp.isTypeOf(Exp!FalseValue) ) {
+		return new Exp!FalseValue();
+	}
+
+	// X and X = X			-- idempotent laws	
+	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.leftExp.isTypeOf(Exp!VarOccurence)) {
+		if (self.leftExp.variable = self.rightExp.variable) {
+			return self.leftExp.simplify();
+		}
+	} 
+		
+	// X and Y = X' and Y' 
+	var newAnd = new Exp!And();
+	newAnd.leftExp = self.leftExp.simplify();
+	newAnd.rightExp = self.rightExp.simplify();
+	return newAnd;
+}
+
+operation Exp!Or simplify() : Exp!Expression {
+
+	// X or FALSE = X		-- identity laws
+	if ( self.rightExp.isTypeOf(Exp!FalseValue) ) {
+		return self.leftExp.simplify();
+	}
+	if ( self.leftExp.isTypeOf(Exp!FalseValue) ) {
+		return self.rightExp.simplify();
+	}	
+	
+	// X or TRUE   = TRUE	-- domination laws
+	if ( self.rightExp.isTypeOf(Exp!TrueValue) ) {
+		return new Exp!TrueValue();
+	}
+	if ( self.leftExp.isTypeOf(Exp!TrueValue) ) {
+		return new Exp!TrueValue();
+	}	
+	
+	// X or X = X			-- idempotent laws
+	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.rightExp.isTypeOf(Exp!VarOccurence)) {
+		if (self.leftExp.variable = self.rightExp.variable) {
+			return self.leftExp.simplify();
+		}
+	} 
+	
+	// X or Y = X' or Y'	
+	var newOr = new Exp!Or();
+	newOr.leftExp = self.leftExp.simplify();
+	newOr.rightExp = self.rightExp.simplify();
+	return newOr;
+}
+
+// not not X = X'		-- double negation law
+// not X = not X'
+operation Exp!Not simplify() : Exp!Expression {
+	if ( self.exp.isTypeOf(Exp!Not) ) {
+		return self.exp.exp.simplify();
+	} else {
+		var newNot = new Exp!Not();
+		newNot.exp = self.exp.simplify();
+		return newNot;
+	}	
+}
+
+// X -> Y = X' -> Y'
+operation Exp!Implies simplify() : Exp!Expression {
+	var newImplies = new Exp!Implies();
+	newImplies.leftExp = self.leftExp.simplify();
+	newImplies.rightExp = self.rightExp.simplify();
+	return newImplies;
+}
+
+// X = X'
+operation Exp!VarOccurence simplify() : Exp!Expression {
+	var newVar = new Exp!VarOccurence();
+	newVar.variable = self.variable;
+	return newVar;
+}
+
+/*
+operation Exp!Expression simplify() : Exp!Expression {
+	self.println("Unrecognized expression");
+}
+*/

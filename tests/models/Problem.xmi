@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simple-csp:Problem
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:simple-csp="http://famosa.github.io/csp/1.0/simple-csp">
+  <variables
+      name="a"/>
+  <variables
+      name="b"/>
+  <variables
+      name="c"/>
+  <constraint
+      name="c1">
+    <exp xsi:type="simple-csp:And">
+      <leftExp
+          xsi:type="simple-csp:Not">
+        <exp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.1"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.0"/>
+    </exp>
+  </constraint>
+  <constraint
+      name="c2">
+    <exp xsi:type="simple-csp:Implies">
+      <leftExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.0"/>
+      <rightExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.1"/>
+    </exp>
+  </constraint>
+  <constraint
+      name="c3">
+    <exp xsi:type="simple-csp:Implies">
+      <leftExp
+          xsi:type="simple-csp:Not">
+        <exp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.0"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:Or">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.1"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.2"/>
+      </rightExp>
+    </exp>
+  </constraint>
+  <constraint
+      name="c4">
+    <exp xsi:type="simple-csp:And">
+      <leftExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.0"/>
+      <rightExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.0"/>
+    </exp>
+  </constraint>
+  <constraint
+      name="c5">
+    <exp xsi:type="simple-csp:Or">
+      <leftExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.1"/>
+      <rightExp
+          xsi:type="simple-csp:VarOccurence"
+          variable="//@variables.1"/>
+    </exp>
+  </constraint>
+</simple-csp:Problem>

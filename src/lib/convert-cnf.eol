@@ -1,0 +1,60 @@
+"Operations to convert a Logical Expression to CNF".println();
+
+// X and Y = not ( not X' or not Y' )   -- De Morgan's laws
+operation Exp!And convertToCNF() : Exp!Expression {
+
+	var newNotLeft = new Exp!Not();
+	newNotLeft.exp = self.leftExp.convertToCNF();
+	
+	var newNotRight = new Exp!Not();
+	newNotRight.exp = self.rightExp.convertToCNF();
+
+	var newOr = new Exp!Or();
+	newOr.leftExp = newNotLeft;
+	newOr.rightExp = newNotRight;
+
+	var newNot = new Exp!Not();
+	newNot.exp = newOr;
+	
+	return newNot;
+}
+
+// X or Y = X' or Y'
+operation Exp!Or convertToCNF() : Exp!Expression {
+	var newOr = new Exp!Or();
+	newOr.leftExp = self.leftExp.convertToCNF();
+	newOr.rightExp = self.rightExp.convertToCNF();
+	return newOr;
+}
+
+// not X = not X'
+operation Exp!Not convertToCNF() : Exp!Expression {
+	var newNot = new Exp!Not();
+	newNot.exp = self.exp.convertToCNF();
+	return newNot;
+}
+
+// X -> Y = not X or Y
+operation Exp!Implies convertToCNF() : Exp!Expression {
+	var newNot = new Exp!Not();
+	newNot.exp = self.leftExp.convertToCNF();
+
+	var newOr = new Exp!Or();
+	newOr.leftExp = newNot;
+	newOr.rightExp = self.rightExp.convertToCNF();
+	
+	return newOr;
+}
+
+// X = X'
+operation Exp!VarOccurence convertToCNF() : Exp!Expression {
+	var newVar = new Exp!VarOccurence();
+	newVar.variable = self.variable;
+	return newVar;
+}
+
+/*
+operation Exp!Expression convertToCNF() : Exp!Expression {
+	self.println("Unrecognized expression");
+}
+*/
