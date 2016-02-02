@@ -1,60 +1,335 @@
+import "cspUtils.eol";
+
 "Operations to convert a Logical Expression to CNF".println();
 
-// X and Y = not ( not X' or not Y' )   -- De Morgan's laws
-operation Exp!And convertToCNF() : Exp!Expression {
-
-	var newNotLeft = new Exp!Not();
-	newNotLeft.exp = self.leftExp.convertToCNF();
-	
-	var newNotRight = new Exp!Not();
-	newNotRight.exp = self.rightExp.convertToCNF();
-
-	var newOr = new Exp!Or();
-	newOr.leftExp = newNotLeft;
-	newOr.rightExp = newNotRight;
-
-	var newNot = new Exp!Not();
-	newNot.exp = newOr;
-	
-	return newNot;
-}
-
-// X or Y = X' or Y'
-operation Exp!Or convertToCNF() : Exp!Expression {
-	var newOr = new Exp!Or();
-	newOr.leftExp = self.leftExp.convertToCNF();
-	newOr.rightExp = self.rightExp.convertToCNF();
-	return newOr;
-}
-
-// not X = not X'
-operation Exp!Not convertToCNF() : Exp!Expression {
-	var newNot = new Exp!Not();
-	newNot.exp = self.exp.convertToCNF();
-	return newNot;
-}
-
-// X -> Y = not X or Y
-operation Exp!Implies convertToCNF() : Exp!Expression {
-	var newNot = new Exp!Not();
-	newNot.exp = self.leftExp.convertToCNF();
-
-	var newOr = new Exp!Or();
-	newOr.leftExp = newNot;
-	newOr.rightExp = self.rightExp.convertToCNF();
-	
-	return newOr;
-}
-
-// X = X'
-operation Exp!VarOccurence convertToCNF() : Exp!Expression {
-	var newVar = new Exp!VarOccurence();
-	newVar.variable = self.variable;
-	return newVar;
-}
-
-/*
+// convert to CNF
 operation Exp!Expression convertToCNF() : Exp!Expression {
-	self.println("Unrecognized expression");
+	
+	// 0. define a set with the intermidiate expression 
+	//    that must be deleted at the end
+	var toDelete = new Set();
+	
+	// 1. eliminate biconditional
+	var exp 	= self.eliminateBiconditional();
+	toDelete.add(exp);
+	
+	// 2. eliminate implications
+	exp	= exp.eliminateImplications();
+		
+	// NOTE: CNF requires NOT (~) to appear only in literals
+
+	// 3. move negations inwards
+	while( exp.requireMoveNotInwards() ) {
+		toDelete.add(exp);
+		exp = exp.moveNotInwards();
+	}
+	
+	// 4. distribute AND over OR
+	while( exp.requireDistributeAndOverOr() ) {
+		toDelete.add(exp);		
+		exp = exp.distributeAndOverOr();
+	}
+
+	// 5. delete the intermediate expressions
+	for ( exp in toDelete ) {
+		delete exp;
+	}
+	
+	exp.~cnf = true;
+	return exp;
 }
-*/
+
+
+// ===
+
+// Eliminate biconditional 
+// X <=> Y  = (X => Y) and (Y => Z) 
+operation Exp!Expression eliminateBiconditional() : Exp!Expression {
+
+	if ( self.isTypeOf(Exp!Equal) ) {
+		
+		var firstImpl = new Exp!Implies();
+		firstImpl.leftExp = self.leftExp.eliminateBiconditional();
+		firstImpl.rightExp = self.rightExp.eliminateBiconditional();
+
+		var secondImpl = new Exp!Implies();
+		secondImpl.leftExp = self.rightExp.eliminateBiconditional();
+		secondImpl.rightExp = self.leftExp.eliminateBiconditional();
+		
+		var newAnd = new Exp!And();
+		newAnd.leftExp = firstImpl;
+		newAnd.rightExp = secondImpl;
+		
+		return newAnd;
+	
+	} else {
+		
+		var newExp = self.createCompatible();		
+		if ( self.isKindOf(Exp!UnaryOp) ) {
+			newExp.exp = self.exp.eliminateBiconditional();
+		}
+		if ( self.isKindOf(Exp!BinaryOp) ) {
+			newExp.leftExp = self.leftExp.eliminateBiconditional();
+			newExp.rightExp = self.rightExp.eliminateBiconditional();
+		}
+		if ( self.isKindOf(Exp!VarOccurence) ) {
+			newExp.variable = self.variable;
+		}			
+
+		return newExp;		
+	}
+}
+
+
+// Eliminate implications
+// X => Y  = (not X) or Y 
+operation Exp!Expression eliminateImplications() : Exp!Expression {
+
+	if ( self.isTypeOf(Exp!Implies) ) {
+		
+		var newNot = new Exp!Not();
+		newNot.exp = self.leftExp.eliminateImplications();
+	
+		var newOr = new Exp!Or();
+		newOr.leftExp = newNot;
+		newOr.rightExp = self.rightExp.eliminateImplications();
+		
+		return newOr;	
+
+	} else {
+		
+		var newExp = self.createCompatible();		
+		if ( self.isKindOf(Exp!UnaryOp) ) {
+			newExp.exp = self.exp.eliminateImplications();
+		}
+		if ( self.isKindOf(Exp!BinaryOp) ) {
+			newExp.leftExp = self.leftExp.eliminateImplications();
+			newExp.rightExp = self.rightExp.eliminateImplications();
+		}
+		if ( self.isKindOf(Exp!VarOccurence) ) {
+			newExp.variable = self.variable;
+		}			
+		
+		return newExp;		
+	}
+}
+
+operation Exp!Expression requireMoveNotInwards() : Boolean  {
+
+	if ( self.isTypeOf(Exp!Not) ) {
+	
+		if ( not self.exp.isTypeOf(Exp!VarOccurence) ) 
+			return true;
+		else 	
+			return  false;
+		
+	} else {
+			
+		if ( self.isKindOf(Exp!UnaryOp) ) {
+			return self.exp.requireMoveNotInwards();
+		}
+		if ( self.isKindOf(Exp!BinaryOp) ) {
+			if ( self.leftExp.requireMoveNotInwards() ) 
+				return true;
+			else
+				return self.rightExp.requireMoveNotInwards();
+		}
+		if ( self.isKindOf(Exp!VarOccurence) ) {
+			return false;
+		}			
+		
+		return false;		
+	}
+}
+
+operation Exp!Expression moveNotInwards() : Exp!Expression  {
+
+	if ( self.isTypeOf(Exp!Not) ) {
+	
+		// not (X and Y) = not X or not Y	-- De Morgan's law
+		if ( self.exp.isTypeOf(Exp!And) ) {
+		
+			var newNotLeft = new Exp!Not();
+			newNotLeft.exp = self.exp.leftExp.moveNotInwards();
+			
+			var newNotRight = new Exp!Not();
+			newNotRight.exp = self.exp.rightExp.moveNotInwards();
+		
+			var newOr = new Exp!Or();
+			newOr.leftExp = newNotLeft;
+			newOr.rightExp = newNotRight;
+		
+			return newOr;			
+		}
+		
+		// not (X or Y) = not X and not Y	-- De Morgan's law
+		if ( self.exp.isTypeOf(Exp!Or) ) {
+	
+			var newNotLeft = new Exp!Not();
+			newNotLeft.exp = self.exp.leftExp.moveNotInwards();
+			
+			var newNotRight = new Exp!Not();
+			newNotRight.exp = self.exp.rightExp.moveNotInwards();
+		
+			var newAnd = new Exp!And();
+			newAnd.leftExp = newNotLeft;
+			newAnd.rightExp = newNotRight;
+		
+			return newAnd;			
+		}
+		
+		// not not X = X'			-- double negation law	
+		if ( self.exp.isTypeOf(Exp!Not) ) {
+			return self.exp.exp.moveNotInwards();
+		}
+		
+		// not X = not X'
+		var newNot = new Exp!Not();
+		newNot.exp = self.exp.moveNotInwards();
+		return newNot;	
+
+		
+	} else {
+		
+		var newExp = self.createCompatible();		
+		if ( self.isKindOf(Exp!UnaryOp) ) {
+			newExp.exp = self.exp.moveNotInwards();
+		}
+		if ( self.isKindOf(Exp!BinaryOp) ) {
+			newExp.leftExp = self.leftExp.moveNotInwards();
+			newExp.rightExp = self.rightExp.moveNotInwards();
+		}
+		if ( self.isKindOf(Exp!VarOccurence) ) {
+			newExp.variable = self.variable;
+		}			
+		
+		return newExp;		
+	}
+}
+
+
+operation Exp!Expression requireDistributeAndOverOr() : Boolean  {
+
+	if ( self.isTypeOf(Exp!Or) ) {
+	
+		if ( self.leftExp.isTypeOf(Exp!And) or self.rightExp.isTypeOf(Exp!And) ) 
+			return true;		
+	} 
+	
+	if ( self.isKindOf(Exp!UnaryOp) ) {
+		return self.exp.requireDistributeAndOverOr();
+	}
+	if ( self.isKindOf(Exp!BinaryOp) ) {
+		if ( self.leftExp.requireDistributeAndOverOr() ) 
+			return true;
+		else
+			return self.rightExp.requireDistributeAndOverOr();
+	}
+	if ( self.isKindOf(Exp!VarOccurence) ) {
+		return false;
+	}			
+	
+	return false;		
+
+}
+
+
+operation Exp!Expression distributeAndOverOr() : Exp!Expression  {
+
+	if ( self.isTypeOf(Exp!Or) ) {
+	
+		// (X and Y) or (W and Z) = (X or W) and (X or Z) and (Y or W) and (Y or Z)
+		//     -- distribution law
+		if ( self.rightExp.isTypeOf(Exp!And) and self.leftExp.isTypeOf(Exp!And) ) {
+		
+			var firstOr = new Exp!Or();
+			firstOr.leftExp = self.leftExp.leftExp.distributeAndOverOr();
+			firstOr.rightExp = self.rightExp.leftExp.distributeAndOverOr();
+	
+			var secondOr = new Exp!Or();
+			secondOr.leftExp = self.leftExp.leftExp.distributeAndOverOr();
+			secondOr.rightExp = self.rightExp.rightExp.distributeAndOverOr();
+	
+			var thirdOr = new Exp!Or();
+			thirdOr.leftExp = self.leftExp.rightExp.distributeAndOverOr();
+			thirdOr.rightExp = self.rightExp.leftExp.distributeAndOverOr();
+	
+			var fourthOr = new Exp!Or();
+			fourthOr.leftExp = self.leftExp.rightExp.distributeAndOverOr();
+			fourthOr.rightExp = self.rightExp.rightExp.distributeAndOverOr();
+	
+			var thirdAnd = new Exp!And();
+			thirdAnd.leftExp = thirdOr;
+			thirdAnd.rightExp = fourthOr;
+		
+			var secondAnd = new Exp!And();
+			secondAnd.leftExp = secondOr;
+			secondAnd.rightExp = thirdAnd;
+			
+			var newAnd = new Exp!And();
+			newAnd.leftExp = firstOr;
+			newAnd.rightExp = secondAnd; 	
+		
+			return newAnd;			
+		}
+	
+		// (X and Y) or Z = (X or Z) and (Y or Z)  -- distribution law
+		if ( self.leftExp.isTypeOf(Exp!And) ) {
+		
+			var newLeft = new Exp!Or();
+			newLeft.leftExp = self.leftExp.leftExp.distributeAndOverOr();
+			newLeft.rightExp = self.rightExp.distributeAndOverOr();
+			
+			var newRight = new Exp!Or();
+			newRight.leftExp = self.leftExp.rightExp.distributeAndOverOr();
+			newRight.rightExp = self.rightExp.distributeAndOverOr();
+		
+			var newAnd = new Exp!And();
+			newAnd.leftExp = newLeft;
+			newAnd.rightExp = newRight;
+		
+			return newAnd;			
+		}
+	
+		// X or (Y and Z) = (X or Y) and (X or Z)  -- distribution law
+		if ( self.rightExp.isTypeOf(Exp!And) ) {
+		
+			var newLeft = new Exp!Or();
+			newLeft.leftExp = self.leftExp.distributeAndOverOr();
+			newLeft.rightExp = self.rightExp.leftExp.distributeAndOverOr();
+			
+			var newRight = new Exp!Or();
+			newRight.leftExp = self.leftExp.distributeAndOverOr();
+			newRight.rightExp = self.rightExp.rightExp.distributeAndOverOr();
+		
+			var newAnd = new Exp!And();
+			newAnd.leftExp = newLeft;
+			newAnd.rightExp = newRight;
+		
+			return newAnd;			
+		}
+
+		// X or Y = X' or Y'	
+		var newOr = new Exp!Or();
+		newOr.leftExp = self.leftExp.distributeAndOverOr();
+		newOr.rightExp = self.rightExp.distributeAndOverOr();
+		return newOr;		
+		
+		
+	} else {
+		
+		var newExp = self.createCompatible();		
+		if ( self.isKindOf(Exp!UnaryOp) ) {
+			newExp.exp = self.exp.distributeAndOverOr();
+		}
+		if ( self.isKindOf(Exp!BinaryOp) ) {
+			newExp.leftExp = self.leftExp.distributeAndOverOr();
+			newExp.rightExp = self.rightExp.distributeAndOverOr();
+		}
+		if ( self.isKindOf(Exp!VarOccurence) ) {
+			newExp.variable = self.variable;
+		}			
+		
+		return newExp;		
+	}
+}

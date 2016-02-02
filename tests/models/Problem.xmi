@@ -10,6 +10,16 @@
       name="b"/>
   <variables
       name="c"/>
+  <variables
+      name="d"/>
+  <variables
+      name="a2"/>
+  <variables
+      name="b2"/>
+  <variables
+      name="c2"/>
+  <variables
+      name="d2"/>
   <constraint
       name="c1">
     <exp xsi:type="simple-csp:And">
@@ -75,6 +85,146 @@
       <rightExp
           xsi:type="simple-csp:VarOccurence"
           variable="//@variables.1"/>
+    </exp>
+  </constraint>
+  <constraint
+      name="c6">
+    <exp xsi:type="simple-csp:Or">
+      <leftExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.0"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.1"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.2"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.3"/>
+      </rightExp>
+    </exp>
+  </constraint>
+  <constraint
+      name="ej2">
+    <exp xsi:type="simple-csp:Or">
+      <leftExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.0"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.4"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:Or">
+        <leftExp
+            xsi:type="simple-csp:And">
+          <leftExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.1"/>
+          <rightExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.5"/>
+        </leftExp>
+        <rightExp
+            xsi:type="simple-csp:Or">
+          <leftExp
+              xsi:type="simple-csp:And">
+            <leftExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.2"/>
+            <rightExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.6"/>
+          </leftExp>
+          <rightExp
+              xsi:type="simple-csp:And">
+            <leftExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.3"/>
+            <rightExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.7"/>
+          </rightExp>
+        </rightExp>
+      </rightExp>
+    </exp>
+  </constraint>
+  <constraint
+      name="ej3">
+    <exp xsi:type="simple-csp:And">
+      <leftExp
+          xsi:type="simple-csp:Implies">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.0"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.4"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:Implies">
+          <leftExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.1"/>
+          <rightExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.5"/>
+        </leftExp>
+        <rightExp
+            xsi:type="simple-csp:Not">
+          <exp
+              xsi:type="simple-csp:Implies">
+            <leftExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.2"/>
+            <rightExp
+                xsi:type="simple-csp:VarOccurence"
+                variable="//@variables.6"/>
+          </exp>
+        </rightExp>
+      </rightExp>
+    </exp>
+  </constraint>
+  <constraint
+      name="paper-ej1">
+    <exp xsi:type="simple-csp:Or">
+      <leftExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.0"/>
+        <rightExp
+            xsi:type="simple-csp:VarOccurence"
+            variable="//@variables.1"/>
+      </leftExp>
+      <rightExp
+          xsi:type="simple-csp:And">
+        <leftExp
+            xsi:type="simple-csp:Not">
+          <exp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.2"/>
+        </leftExp>
+        <rightExp
+            xsi:type="simple-csp:Or">
+          <leftExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.3"/>
+          <rightExp
+              xsi:type="simple-csp:VarOccurence"
+              variable="//@variables.7"/>
+        </rightExp>
+      </rightExp>
     </exp>
   </constraint>
 </simple-csp:Problem>

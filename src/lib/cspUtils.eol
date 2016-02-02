@@ -1,0 +1,67 @@
+"Utility Operations to manage CSP models".println();
+
+operation Exp!Expression createCompatible() : Exp!Expression {
+
+	// var type = self.type();
+	// type.name.println();
+
+	if ( self.isTypeOf( Exp!Not) ) {
+		return new Exp!Not();
+	}
+
+	if ( self.isTypeOf( Exp!VarOccurence) ) {
+		return new Exp!VarOccurence();
+	}
+
+
+	if ( self.isTypeOf( Exp!And) ) {
+		return new Exp!And();
+	}
+	if ( self.isTypeOf( Exp!Or) ) {
+		return new Exp!Or();
+	}
+	if ( self.isTypeOf( Exp!Implies) ) {
+		return new Exp!Implies();
+	}
+	if ( self.isTypeOf( Exp!Equal) ) {
+		return new Exp!Equal();
+	}
+	if ( self.isTypeOf( Exp!UnEqual) ) {
+		return new Exp!UnEqual();
+	}
+	if ( self.isTypeOf( Exp!Less) ) {
+		return new Exp!Less();
+	}
+	if ( self.isTypeOf( Exp!LessEqual) ) {
+		return new Exp!LessEqual();
+	}
+	if ( self.isTypeOf( Exp!Greater) ) {
+		return new Exp!Greater();
+	}
+	if ( self.isTypeOf( Exp!GreaterEqual) ) {
+		return new Exp!GreaterEqual();
+	}
+
+	if ( self.isTypeOf( Exp!Minus) ) {
+		return new Exp!Minus();
+	}
+	if ( self.isTypeOf( Exp!Plus) ) {
+		return new Exp!Plus();
+	}
+	if ( self.isTypeOf( Exp!Times) ) {
+		return new Exp!Times();
+	}
+	if ( self.isTypeOf( Exp!Power) ) {
+		return new Exp!Power();
+	}
+	
+	if ( self.isTypeOf( Exp!Sum) ) {
+		return new Exp!Minus();
+	}
+	if ( self.isTypeOf( Exp!Min) ) {
+		return new Exp!Plus();
+	}
+	if ( self.isTypeOf( Exp!Max) ) {
+		return new Exp!Times();
+	}	
+}

@@ -1,18 +1,15 @@
+import "../../src/lib/cspUtils.eol";
 import "../../src/lib/simple-csp-toString.eol";
-import "../../src/lib/convert-cnf.eol";
-import "../../src/lib/simplify-cnf.eol";
+import "../../src/lib/convert-cnf2.eol";
+
 
 for( constr in Exp!Constraint.all) {
 
 	constr.name.println();
 	
 	var orig	= constr.exp;
-	var smp1 	= orig.simplify(); 
-	var cnf 	= smp1.convertToCNF();
-	var smp2 	= cnf.simplify(); 
+	var cnf 	= constr.exp.convertToCNF();
 
 	orig.asString().println("\t");
-	smp1.asString().println("\t");
 	cnf.asString().println("\t");
-	smp2.asString().println("\t");
 }
