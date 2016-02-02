@@ -1,9 +1,5 @@
 "Operations to simplify Logical Expressions".println();
 
-// TODO:
-// X and not X = FALSE	-- negation laws
-// X or not X = TRUE	-- negation laws
-
 operation Exp!And simplify() : Exp!Expression {
 
 	// X and TRUE = X		-- identity laws
@@ -22,8 +18,22 @@ operation Exp!And simplify() : Exp!Expression {
 		return new Exp!FalseValue();
 	}
 
+	// X and not X = FALSE	-- negation laws
+	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.rightExp.isTypeOf(Exp!Not) 
+			and self.rightExp.exp.isTypeOf(VarOccurence)) {
+		if (self.leftExp.variable = self.rightExp.exp.variable) {
+			return new Exp!FalseValue();
+		}			
+	}
+	if ( self.rightExp.isTypeOf(Exp!VarOccurence) and self.leftExp.isTypeOf(Exp!Not) 
+			and self.leftExp.exp.isTypeOf(VarOccurence)) {
+		if (self.rightExp.variable = self.leftExp.exp.variable) {
+			return new Exp!FalseValue();
+		}			
+	}	
+
 	// X and X = X			-- idempotent laws	
-	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.leftExp.isTypeOf(Exp!VarOccurence)) {
+	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.rightExp.isTypeOf(Exp!VarOccurence)) {
 		if (self.leftExp.variable = self.rightExp.variable) {
 			return self.leftExp.simplify();
 		}
@@ -53,6 +63,20 @@ operation Exp!Or simplify() : Exp!Expression {
 	if ( self.leftExp.isTypeOf(Exp!TrueValue) ) {
 		return new Exp!TrueValue();
 	}	
+
+	// X or not X = TRUE	-- negation laws
+	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.rightExp.isTypeOf(Exp!Not) 
+			and self.rightExp.exp.isTypeOf(VarOccurence)) {
+		if (self.leftExp.variable = self.rightExp.exp.variable) {
+			return new Exp!TrueValue();
+		}			
+	}
+	if ( self.rightExp.isTypeOf(Exp!VarOccurence) and self.leftExp.isTypeOf(Exp!Not) 
+			and self.leftExp.exp.isTypeOf(VarOccurence)) {
+		if (self.rightExp.variable = self.leftExp.exp.variable) {
+			return new Exp!TrueValue();
+		}			
+	}	
 	
 	// X or X = X			-- idempotent laws
 	if ( self.leftExp.isTypeOf(Exp!VarOccurence) and self.rightExp.isTypeOf(Exp!VarOccurence)) {
@@ -68,16 +92,17 @@ operation Exp!Or simplify() : Exp!Expression {
 	return newOr;
 }
 
-// not not X = X'		-- double negation law
-// not X = not X'
 operation Exp!Not simplify() : Exp!Expression {
+
+	// not not X = X'			-- double negation law	
 	if ( self.exp.isTypeOf(Exp!Not) ) {
 		return self.exp.exp.simplify();
-	} else {
-		var newNot = new Exp!Not();
-		newNot.exp = self.exp.simplify();
-		return newNot;
-	}	
+	}
+	
+	// not X = not X'
+	var newNot = new Exp!Not();
+	newNot.exp = self.exp.simplify();
+	return newNot;	
 }
 
 // X -> Y = X' -> Y'
